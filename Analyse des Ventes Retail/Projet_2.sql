@@ -153,7 +153,7 @@ GROUP BY order_id;
 /*==========================================================================================
 							Intermédiaire (Les jointures)
 
-				INNER JOIN, LEFT JOIN
+				INNER JOIN, LEFT JOIN,  SELF JOIN, FULL OUTER JOIN, CROSS JOIN
 ==========================================================================================*/
 
 -- INNER JOIN entre customers et orders, pour récupérer les clients qui ont passés la commande
@@ -167,6 +167,7 @@ INNER JOIN orders
 ON customers.customer_id = orders.customer_id
 WHERE status = 'completed';
 
+
 -- Afficher tous les clients et leurs commandes, s'ils en ont
 SELECT
 	customers.*,
@@ -178,6 +179,107 @@ LEFT JOIN orders
 ON customers.customer_id = orders.customer_id
 WHERE status = 'completed';
 
+
+-- SELF JOIN pour trouver des pairs de clients qui arrivent à la même date
+SELECT 
+	c1.customer_id AS id_client1,
+    c1.first_name AS prenom_client1,
+    c1.last_name AS nom_client1,
+    c2.customer_id AS id_client2,
+    c2.first_name AS prenom_client2,
+    c2.last_name AS nom_client2,
+    c1.join_date
+FROM customers c1
+INNER JOIN customers c2
+ON c1.customer_id < c2.customer_id
+AND c1.join_date = c2.join_date;
+
+
+
+-- FULL OUTER JOIN récupère tous les clients et toutes les commandes,
+
+SELECT 
+	c.customer_id,
+    c.first_name,
+    c.last_name,
+    o.order_id,
+    o.order_date
+FROM customers c 
+FULL OUTER JOIN 
+ON c.customer_id = o.customer_id;
+
+
+
+
+
+/*==========================================================================================
+							Opérations ensemblistes
+					UNION, INTERSECT, EXCEPT
+==========================================================================================*/
+
+
+-- UNION pour combiner deux ou plusieurs tables
+SELECT
+	'customers' AS table_name,
+    COUNT(customer_id) AS Nombre
+FROM customers
+
+UNION
+
+SELECT 
+	'products' AS table_name,
+    COUNT(product_id) AS Nombre
+FROM products
+
+UNION
+
+SELECT 
+	'orders' AS table_name,
+    COUNT(order_id) AS Nombre
+FROM orders;
+
+
+
+-- Trouver des clients qui ont commandé en 2023 et 2022
+SELECT 
+	customer_id
+FROM orders
+WHERE strftime('%Y', order_date) = '2023'
+
+INTERSECT
+
+SELECT 
+	customer_id
+FROM orders
+WHERE strftime('%Y', order_date) = '2022';
+
+-- Il me semble que strftime est une fonction spécifique à SQLite, MySQL ne supporte pas INTERSECT non plus. J'ai fais recours à une autre alternative ci-dessous avec la fonction YEAR et GROUP BY
+
+SELECT customer_id
+FROM orders
+WHERE YEAR(order_date) IN (2022, 2023)
+GROUP BY customer_id
+HAVING COUNT(DISTINCT YEAR(order_date)) = 2;
+
+
+
+-- Trouver les produits qui ne sont pas vendus en 2023
+SELECT product_id
+FROM products
+
+EXCEPT
+
+SELECT product_id
+FROM order_details
+WHERE order_id IN (SELECT order_id FROM orders WHERE YEAR(order_date) = 2023)
+
+
+
+
+/*==========================================================================================
+							Gestion des valeurs nulles
+								NULLIF, COALESCE
+==========================================================================================*/
 
 
 
