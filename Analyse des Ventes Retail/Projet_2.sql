@@ -284,3 +284,60 @@ WHERE order_id IN (SELECT order_id FROM orders WHERE YEAR(order_date) = 2023)
 
 
 
+
+/*==========================================================================================
+						Changement de type de données avec CAST
+			Pratique pour convertir les string à integer ou string à date.
+==========================================================================================*/
+
+-- Convertir les années de commande en integer, pour effectuer les calculs
+
+SELECT 
+    order_id,      
+    order_date,     
+    CAST(YEAR(order_date) AS UNSIGNED) AS year,       
+    CAST(YEAR(order_date) AS UNSIGNED) + 1 AS following_year 
+FROM orders;
+
+
+/*==========================================================================================
+					Logique conditionnelle avec CASE
+		Combiner CASE avec des agrégations : SUM, COUNT, AVG, MIN, MAX, DISTINCT
+==========================================================================================*/
+
+SELECT
+	COUNT(DISTINCT CASE WHEN status = 'Completed' THEN order_id END) AS Nbr_commande_complète,
+    SUM(DISTINCT CASE WHEN status = 'Completed' THEN d.unit_price * d.quantity ELSE 0 END) AS Vente_total_commande_complète,
+    AVG(DISTINCT CASE WHEN status = 'Completed' THEN d.unit_price * d.quantity ELSE 0 END) AS Vente_Moyen_commande_complète,
+	MIN(DISTINCT CASE WHEN status = 'Completed' THEN d.unit_price * d.quantity ELSE 0 END) AS Vente_MIN_commande_complète,
+    MAX(DISTINCT CASE WHEN status = 'Completed' THEN d.unit_price * d.quantity ELSE 0 END) AS Vente_MAX_commande_complète
+FROM orders o
+JOIN order_details d
+USING(order_id);
+
+
+
+
+
+/*==========================================================================================
+						Format de date
+			DATE_ADD,  DATEDIFF
+==========================================================================================*/
+
+-- Ajouter 7 jours à la date de la commande pour obtenir la date de paiement
+
+SELECT 
+	order_id,
+    order_date,
+DATE_ADD(order_date, INTERVAL 7 DAY) AS Date_payement
+FROM orders;
+
+
+-- Calculer le nombre de jours entre la date de la commande et aujourd'hui AVEC DATEDIFF
+
+SELECT 
+	order_id,
+    order_date,
+DATEDIFF(CURRENT_DATE, order_date) AS Nbr_jour_écoulés_depuis_commande
+FROM orders
+LIMIT 15;
