@@ -341,3 +341,48 @@ SELECT
 DATEDIFF(CURRENT_DATE, order_date) AS Nbr_jour_écoulés_depuis_commande
 FROM orders
 LIMIT 15;
+
+
+-- Extraire le mois et compter les commandes de l’année 2024.
+
+SELECT 
+    DATE_PART('month', order_date) AS order_month,
+	COUNT(order_id) AS order_count
+FROM orders
+WHERE DATE_PART('year', order_date) = 2024
+GROUP BY order_month;
+
+							-- OU
+SELECT 
+	DATE_FORMAT(order_date, '%M') AS Mois,
+    COUNT(order_id) AS Nbr_commande
+FROM orders
+WHERE YEAR(order_date) = 2024
+GROUP BY Mois
+ORDER BY Nbr_commande DESC;
+
+
+
+
+
+
+
+
+-- Claculer le Nombre de Cammande par mois
+
+SELECT 
+	DATE_TRUNC('month', order_date) AS month_start_date,
+	COUNT(order_id) AS order_count
+FROM orders
+GROUP BY month_start_date;
+
+							-- OU
+
+SELECT 
+	DATE_FORMAT(order_date, '%Y-%m') AS Mois,
+    COUNT(*)AS Nbre_commande
+FROM orders
+GROUP BY Mois
+ORDER BY Mois;
+    
+	
